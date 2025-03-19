@@ -1,0 +1,46 @@
+name: Deploy to EC2
+
+on:
+  workflow_run:
+    workflows:
+      - "Build and Push Docker Image"
+    types:
+      - completed
+  push:
+    branches:
+      - main  # Ensures the deploy workflow is visible in the main flow
+
+env:
+  IMAGE_NAME: cc-web-tier-server
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            # Pull the latest image
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
+
+            # Stop and remove the old container if it exists
+            docker stop cc-web-tier-server || true
+            docker rm cc-web-tier-server || true
+
+            # Run the new container with environment variables
+            docker run -d \
+              --name cc-web-tier-server \
+              --restart always \
+              -p 8000:8000 \
+              -e aws_access_key_id=${{ secrets.AWS_ACCESS_KEY_ID }} \
+              -e aws_secret_access_key=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
+              -e region_name=${{ secrets.AWS_REGION }} \
+              -e input_bucket=${{ secrets.INPUT_BUCKET }} \
+              -e output_bucket=${{ secrets.OUTPUT_BUCKET }} \
+              -e input_queue_url=${{ secrets.INPUT_QUEUE_URL }} \
+              -e output_queue_url=${{ secrets.OUTPUT_QUEUE_URL }} \
+              ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
