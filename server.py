@@ -107,7 +107,7 @@ def poll_response_queue():
                     Responses[req_id] = result
 
                 sqs.delete_message(output_queue_url, receipt_handle)
-                
+
         except Exception as e:
             print(f"Polling thread crashed with exception: {e}", flush=True)
             time.sleep(2)
@@ -130,13 +130,16 @@ def home():
         # Send message to input SQS queue
         sqs_response = sqs.push_message(input_queue_url, message)
         if sqs_response["ResponseMetadata"]["HTTPStatusCode"] == 200:
-        
+
             while True:
                 time.sleep(0.2)
                 with resp_lock:
                     if req_id in Responses:
                         result = Responses.pop(req_id)
-                        return result
+                        suffix = os.path.splitext(s3_file_key)[0]
+                        response = f"{suffix}:{result}"
+                        return response
+
 
 @app.route("/status")
 def status():
