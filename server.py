@@ -97,7 +97,6 @@ def poll_response_queue():
             data = sqs.recieve_message(output_queue_url, wait_time=3)
 
             if "Messages" in data:
-
                 message = data["Messages"][0]
                 output_data = json.loads(message["Body"])
                 receipt_handle = message["ReceiptHandle"]
@@ -108,7 +107,7 @@ def poll_response_queue():
                     Responses[req_id] = result
 
                 sqs.delete_message(output_queue_url, receipt_handle)
-
+                
         except Exception as e:
             print(f"Polling thread crashed with exception: {e}", flush=True)
             time.sleep(2)
@@ -131,19 +130,13 @@ def home():
         # Send message to input SQS queue
         sqs_response = sqs.push_message(input_queue_url, message)
         if sqs_response["ResponseMetadata"]["HTTPStatusCode"] == 200:
-            counter = 0
+        
             while True:
-                counter += 1
-                if counter >= 5:
-                    break
-                time.sleep(3)
+                time.sleep(0.2)
                 with resp_lock:
                     if req_id in Responses:
                         result = Responses.pop(req_id)
                         return result
-
-            return f"Waited for {counter * 3} seconds"
-
 
 @app.route("/status")
 def status():
