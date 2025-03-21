@@ -8,6 +8,13 @@ import time
 import uuid
 import json
 from collections import defaultdict
+import logging
+
+logging.basicConfig(
+    filename="pending_requests.log",
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s: %(message)s"
+)
 
 # Load environment variables
 load_dotenv()
@@ -18,7 +25,6 @@ input_bucket = os.getenv("input_bucket")
 input_queue_url = os.getenv("input_queue_url")
 output_queue_url = os.getenv("output_queue_url")
 
-# Optional: Add short timeouts & no retries for SQS so it never hangs forever
 custom_config = Config(connect_timeout=5, read_timeout=5, retries={"max_attempts": 0})
 
 
@@ -85,6 +91,10 @@ app = Flask(__name__)
 resp_lock = threading.Lock()
 Responses = defaultdict(str)
 
+# Global pending requests number
+pending_requests = 0
+pending_requests_lock = threading.Lock()
+
 # Initialize S3 and SQS
 s3 = S3()
 sqs = SQS()
@@ -105,7 +115,7 @@ def poll_response_queue():
 
                 with resp_lock:
                     Responses[req_id] = result
-
+                
                 sqs.delete_message(output_queue_url, receipt_handle)
 
         except Exception as e:
@@ -115,6 +125,11 @@ def poll_response_queue():
 
 @app.route("/", methods=["POST"])
 def home():
+    global pending_requests
+    
+    with pending_requests_lock:
+        pending_requests += 1
+    
     # Extract info from request
     file = request.files["inputFile"]
     s3_file_key = file.filename
@@ -138,16 +153,19 @@ def home():
                         result = Responses.pop(req_id)
                         suffix = os.path.splitext(s3_file_key)[0]
                         response = f"{suffix}:{result}"
+                        with pending_requests_lock:
+                            pending_requests -= 1
                         return response
 
-
-@app.route("/status")
-def status():
-    # Let’s see all currently running threads
-    all_threads = threading.enumerate()
-    thread_list = ", ".join(t.name for t in all_threads)
-    return f"Active threads: {thread_list} \nPoller alive? {polling_thread.is_alive()}"
-
+def pending_requests_logger():
+    global pending_requests
+    
+    while True:
+        with pending_requests_lock:
+            logging.info(f"Pending requests: {pending_requests}")
+            
+        time.sleep(1)
+        
 
 # Start polling thread and Flask app
 if __name__ == "__main__":
@@ -155,5 +173,12 @@ if __name__ == "__main__":
         target=poll_response_queue, name="SQS-Poller", daemon=True
     )
     polling_thread.start()
+    
+    pending_requests_logger_thread = threading.Thread(
+        target=pending_requests_logger, name='PendingRequestLogger', daemon=True
+    )
+    pending_requests_logger_thread.start()
+    
+    
 
     app.run(debug=True, port=8000, use_reloader=False, host="0.0.0.0")

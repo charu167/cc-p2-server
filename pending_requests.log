@@ -1,0 +1,47 @@
+2025-03-21 11:34:04,079 INFO: Pending requests: 0
+2025-03-21 11:34:04,097 INFO: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8000
+ * Running on http://192.168.0.182:8000
+2025-03-21 11:34:04,097 INFO: [33mPress CTRL+C to quit[0m
+2025-03-21 11:34:05,084 INFO: Pending requests: 0
+2025-03-21 11:34:06,089 INFO: Pending requests: 0
+2025-03-21 11:34:07,095 INFO: Pending requests: 0
+2025-03-21 11:34:08,097 INFO: Pending requests: 0
+2025-03-21 11:34:09,102 INFO: Pending requests: 0
+2025-03-21 11:34:10,108 INFO: Pending requests: 0
+2025-03-21 11:34:11,109 INFO: Pending requests: 0
+2025-03-21 11:34:12,115 INFO: Pending requests: 0
+2025-03-21 11:34:13,117 INFO: Pending requests: 0
+2025-03-21 11:34:14,122 INFO: Pending requests: 0
+2025-03-21 11:34:15,124 INFO: Pending requests: 0
+2025-03-21 11:34:16,130 INFO: Pending requests: 0
+2025-03-21 11:34:17,136 INFO: Pending requests: 0
+2025-03-21 11:34:18,141 INFO: Pending requests: 0
+2025-03-21 11:34:19,146 INFO: Pending requests: 0
+2025-03-21 11:34:20,152 INFO: Pending requests: 0
+2025-03-21 11:34:21,157 INFO: Pending requests: 0
+2025-03-21 11:34:22,162 INFO: Pending requests: 0
+2025-03-21 11:34:23,168 INFO: Pending requests: 0
+2025-03-21 11:34:24,170 INFO: Pending requests: 0
+2025-03-21 11:34:25,175 INFO: Pending requests: 0
+2025-03-21 11:34:26,178 INFO: Pending requests: 0
+2025-03-21 11:34:27,183 INFO: Pending requests: 0
+2025-03-21 11:34:28,186 INFO: Pending requests: 0
+2025-03-21 11:34:29,191 INFO: Pending requests: 0
+2025-03-21 11:34:30,193 INFO: Pending requests: 0
+2025-03-21 11:34:31,197 INFO: Pending requests: 0
+2025-03-21 11:34:32,202 INFO: Pending requests: 0
+2025-03-21 11:34:33,207 INFO: Pending requests: 0
+2025-03-21 11:34:34,213 INFO: Pending requests: 0
+2025-03-21 11:34:35,217 INFO: Pending requests: 0
+2025-03-21 11:34:36,223 INFO: Pending requests: 0
+2025-03-21 11:34:37,225 INFO: Pending requests: 0
+2025-03-21 11:34:38,230 INFO: Pending requests: 0
+2025-03-21 11:34:39,232 INFO: Pending requests: 0
+2025-03-21 11:34:40,233 INFO: Pending requests: 0
+2025-03-21 11:34:41,239 INFO: Pending requests: 0
+2025-03-21 11:34:42,244 INFO: Pending requests: 0
+2025-03-21 11:34:43,250 INFO: Pending requests: 0
+2025-03-21 11:34:44,255 INFO: Pending requests: 0
+2025-03-21 11:34:45,261 INFO: Pending requests: 0
