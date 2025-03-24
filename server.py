@@ -13,7 +13,7 @@ import logging
 logging.basicConfig(
     filename="pending_requests.log",
     level=logging.INFO,
-    format="%(asctime)s %(levelname)s: %(message)s"
+    format="%(asctime)s %(levelname)s: %(message)s",
 )
 
 # Load environment variables
@@ -25,17 +25,17 @@ input_bucket = os.getenv("input_bucket")
 input_queue_url = os.getenv("input_queue_url")
 output_queue_url = os.getenv("output_queue_url")
 
-custom_config = Config(connect_timeout=5, read_timeout=5, retries={"max_attempts": 0})
-
 
 class SQS:
-    def __init__(self) -> None:
+    def __init__(self):
         self.sqs_client = boto3.client(
             "sqs",
             aws_access_key_id=aws_access_key_id,
             aws_secret_access_key=aws_secret_access_key,
             region_name=region_name,
-            config=custom_config,
+            config=Config(
+                connect_timeout=5, read_timeout=5, retries={"max_attempts": 0}
+            ),
         )
 
     def recieve_message(self, queue_url, wait_time=3):
@@ -63,13 +63,15 @@ class SQS:
 
 
 class S3:
-    def __init__(self) -> None:
+    def __init__(self):
         self.s3_client = boto3.client(
             "s3",
             aws_access_key_id=aws_access_key_id,
             aws_secret_access_key=aws_secret_access_key,
             region_name=region_name,
-            config=custom_config,
+            config=Config(
+                connect_timeout=5, read_timeout=5, retries={"max_attempts": 0}
+            ),
         )
 
     def download_file(self, bucket_name, s3_file_path, local_file_path):
@@ -115,7 +117,7 @@ def poll_response_queue():
 
                 with resp_lock:
                     Responses[req_id] = result
-                
+
                 sqs.delete_message(output_queue_url, receipt_handle)
 
         except Exception as e:
@@ -126,10 +128,10 @@ def poll_response_queue():
 @app.route("/", methods=["POST"])
 def home():
     global pending_requests
-    
+
     with pending_requests_lock:
         pending_requests += 1
-    
+
     # Extract info from request
     file = request.files["inputFile"]
     s3_file_key = file.filename
@@ -157,15 +159,16 @@ def home():
                             pending_requests -= 1
                         return response
 
+
 def pending_requests_logger():
     global pending_requests
-    
+
     while True:
         with pending_requests_lock:
             logging.info(f"Pending requests: {pending_requests}")
-            
+
         time.sleep(1)
-        
+
 
 # Start polling thread and Flask app
 if __name__ == "__main__":
@@ -173,12 +176,10 @@ if __name__ == "__main__":
         target=poll_response_queue, name="SQS-Poller", daemon=True
     )
     polling_thread.start()
-    
-    pending_requests_logger_thread = threading.Thread(
-        target=pending_requests_logger, name='PendingRequestLogger', daemon=True
-    )
-    pending_requests_logger_thread.start()
-    
-    
+
+    # pending_requests_logger_thread = threading.Thread(
+    #     target=pending_requests_logger, name='PendingRequestLogger', daemon=True
+    # )
+    # pending_requests_logger_thread.start()
 
     app.run(debug=True, port=8000, use_reloader=False, host="0.0.0.0")
